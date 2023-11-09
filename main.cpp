@@ -1,17 +1,14 @@
 #include <SFML/Graphics.hpp>
-#include "Animation.h"
+#include "Character.h"
 
 int main()
 {
     // create the window
     sf::RenderWindow window(sf::VideoMode(800, 600), "My window");
-    sf::RectangleShape player(sf::Vector2f(100.0f, 150.0f));
-    player.setPosition(206.0f, 206.0f);
-    sf::Texture playerTexture;
-    playerTexture.loadFromFile("../marioFrames.png");
-    player.setTexture(&playerTexture);
+    sf::Texture characterTexture;
+    characterTexture.loadFromFile("../marioFrames.png");
 
-    Animation animation(&playerTexture, sf::Vector2u(5, 2), 0.07f);
+    Character character(&characterTexture, sf::Vector2u(5, 2), 0.07f, 300.0f);
 
     float deltaTime = 0.0f;
     sf::Clock clock;
@@ -29,11 +26,11 @@ int main()
                 window.close();
         }
 
-        animation.Update(0, deltaTime);
-        player.setTextureRect(animation.uvRect);
+        character.Update(deltaTime);
+
 
         window.clear();
-        window.draw(player);
+        character.Draw(window);
         window.display();
     }
 
