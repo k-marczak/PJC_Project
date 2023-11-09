@@ -12,7 +12,7 @@ public:
 
     void Update(float deltaTime);
     void Draw(sf::RenderWindow& window);
-    bool isJumping = false;
+    bool canJump = false;
 
 private:
     sf::RectangleShape body;

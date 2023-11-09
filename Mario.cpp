@@ -13,7 +13,7 @@ Mario::Mario(sf::Texture *texture, sf::Vector2u imageCount, float switchTime, fl
     body.setSize(sf::Vector2f(80.0f, 120.0f));
     body.setPosition(30.0f, 30.0f);
     body.setTexture(texture);
-    bool isJumping = false;
+    bool canJump = false;
 }
 
 Mario::~Mario() {
@@ -32,24 +32,30 @@ void Mario::Update(float deltaTime) {
 
     // SKAKANIE, COŚ NIE DZIAŁA...
 
-    if(sf::Keyboard::isKeyPressed(sf::Keyboard::Up)){
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && canJump == true){
         std::cout << "Naciskasz!";
-        body.move({0, -2});
-        isJumping = true;
+        velocity.y = -150;
+
+
+        canJump = false;
+
     }
+
 
 
 
     // Gravity Logic
-    if(body.getPosition().y <= 700 && isJumping == false){
+    if(body.getPosition().y <= 700 && canJump == false){
         body.move({0, gravity});
-
+        canJump = false;
     }
 
-//    verticalVelocity += gravity;
-//    velocity.y +=  verticalVelocity* deltaTime;
+    if(body.getPosition().y == 700){
+        canJump = true;
+    }
 
 
+    // Animation change
     if(velocity.x == 0.0f){
         row = 0;
     }
@@ -80,8 +86,11 @@ void Mario::Update(float deltaTime) {
         body.setPosition(0, body.getPosition().y);
 
     // check the floor
-    if(body.getPosition().y > 700)
+    if(body.getPosition().y > 700){
         body.setPosition(body.getPosition().x, 820 - body.getSize().y);
+        canJump = true;
+        std::cout << "bottom_true";
+    }
 
 
 }
