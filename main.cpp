@@ -1,14 +1,25 @@
 #include <SFML/Graphics.hpp>
-#include "Character.h"
+#include "Mario.h"
+
+auto checkPath(){
+
+}
 
 int main()
 {
     // create the window
-    sf::RenderWindow window(sf::VideoMode(800, 600), "My window");
-    sf::Texture characterTexture;
-    characterTexture.loadFromFile("../marioFrames.png");
+    sf::RenderWindow window(sf::VideoMode(1200, 900), "My window");
+    sf::Texture marioTexture;
 
-    Character character(&characterTexture, sf::Vector2u(5, 2), 0.07f, 300.0f);
+    std::string pathName = "../zzhuj1.png";
+
+
+    marioTexture.loadFromFile(pathName);
+
+
+
+    Mario mario(&marioTexture, sf::Vector2u(3, 3), 0.07f, 300.0f, 0.3);
+
 
     float deltaTime = 0.0f;
     sf::Clock clock;
@@ -24,13 +35,17 @@ int main()
             // "close requested" event: we close the window
             if (event.type == sf::Event::Closed)
                 window.close();
+            if (event.type = sf::Event::KeyReleased){
+                mario.isJumping = false;
+            }
+
         }
 
-        character.Update(deltaTime);
+        mario.Update(deltaTime);
 
 
         window.clear();
-        character.Draw(window);
+        mario.Draw(window);
         window.display();
     }
 
