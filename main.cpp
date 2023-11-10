@@ -11,14 +11,11 @@ int main()
     sf::RenderWindow window(sf::VideoMode(1200, 900), "My window");
     sf::Texture marioTexture;
 
-    std::string pathName = "../source1.png";
+    std::string pathName = "../source.png";
 
 
     marioTexture.loadFromFile(pathName);
-
-
-
-    Mario mario(&marioTexture, sf::Vector2u(3, 3), 0.07f, 300.0f, 0.3);
+    Mario mario(&marioTexture, sf::Vector2u(3, 3), 0.07f, 300.0f, 0.3, 800.0f);
 
 
     float deltaTime = 0.0f;

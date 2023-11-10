@@ -6,13 +6,16 @@
 
 class Mario {
 
+
+
 public:
-    Mario(sf::Texture* texture, sf::Vector2u imageCount, float switchTime, float speed, float gravity);
+    Mario(sf::Texture* texture, sf::Vector2u imageCount, float switchTime, float speed, float gravity, float jumpHeight);
     ~Mario();
 
     void Update(float deltaTime);
     void Draw(sf::RenderWindow& window);
     bool canJump = false;
+
 
 private:
     sf::RectangleShape body;
@@ -21,7 +24,10 @@ private:
     float speed;
     float gravity;
     bool faceRight;
+    float jumpStartY;
 
+    sf::Vector2f velocity;
+    float jumpHeight;
 
 };
 
