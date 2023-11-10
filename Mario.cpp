@@ -2,14 +2,15 @@
 #include <iostream>
 #include <valarray>
 #include "Mario.h"
+#include "Map.h"
 
-
-const float jumpVelocity = 200.0f;
-
+// MAP
+Map map;
 
 Mario::Mario(sf::Texture *texture, sf::Vector2u imageCount, float switchTime, float speed, float gravity, float jumpHeight) :
         animation(texture, imageCount, switchTime)
 {
+
 
     this->speed = speed;
     this->jumpHeight = jumpHeight;
@@ -29,14 +30,16 @@ void Mario::Update(float deltaTime) {
 
     velocity.x = 0.0f;
 
+
+    // RUCH LEWO - PRAWO
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
         velocity.x -= speed;
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
         velocity.x += speed;
 
 
-    // SKAKANIE, COŚ NIE DZIAŁA...
 
+    // SKAKANIE, COŚ NIE DZIAŁA...
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && canJump){
         canJump = false;
         std::cout << "Tuu ";
@@ -44,14 +47,18 @@ void Mario::Update(float deltaTime) {
     }
     velocity.y += 981.0f * deltaTime;
 
+
+
+
+
     // Gravity Logic
-    if(body.getPosition().y <= 700 && canJump == false){
+    if(body.getPosition().y <= map.floorHeight && canJump == false){
         body.move({0, gravity});
         canJump = false;
     }
-    if(body.getPosition().y == 700){
-        canJump = true;
-    }
+
+
+
 
     // Animation change
     if(velocity.x == 0.0f){
@@ -68,19 +75,19 @@ void Mario::Update(float deltaTime) {
 
 
 
-
-
     // Collision screen left side.
     if(body.getPosition().x < 0)
         body.setPosition(0, body.getPosition().y);
 
 
 //     check the floor
-    if(body.getPosition().y > 700){
+    if(body.getPosition().y > map.floorHeight){
         body.setPosition(body.getPosition().x, 820 - body.getSize().y);
         canJump = true;
         std::cout << "bottom_true";
     }
+
+
 
     animation.Update(row, deltaTime, faceRight);
     body.setTextureRect(animation.uvRect);

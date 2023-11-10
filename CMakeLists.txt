@@ -8,8 +8,8 @@ add_executable(PJC_Project main.cpp
         Animation.cpp
         Mario.h
         Mario.cpp
-        Collision.h
-        Collision.cpp
+        Map.cpp
+        Map.h
 )
 
 

@@ -24,8 +24,8 @@ private:
     float speed;
     float gravity;
     bool faceRight;
-    float jumpStartY;
 
+    // SKOK
     sf::Vector2f velocity;
     float jumpHeight;
 
