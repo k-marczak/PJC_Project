@@ -11,7 +11,7 @@ int main()
     sf::RenderWindow window(sf::VideoMode(1200, 900), "My window");
     sf::Texture marioTexture;
 
-    std::string pathName = "../zzhuj1.png";
+    std::string pathName = "../source1.png";
 
 
     marioTexture.loadFromFile(pathName);

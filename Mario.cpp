@@ -2,6 +2,9 @@
 #include <iostream>
 #include "Mario.h"
 
+
+const float jumpVelocity = 200.0f;
+
 Mario::Mario(sf::Texture *texture, sf::Vector2u imageCount, float switchTime, float speed, float gravity) :
         animation(texture, imageCount, switchTime)
 {
@@ -11,9 +14,8 @@ Mario::Mario(sf::Texture *texture, sf::Vector2u imageCount, float switchTime, fl
     this->gravity = gravity;
     faceRight = true;
     body.setSize(sf::Vector2f(80.0f, 120.0f));
-    body.setPosition(30.0f, 30.0f);
+    body.setPosition(30.0f, 530.0f);
     body.setTexture(texture);
-    bool canJump = false;
 }
 
 Mario::~Mario() {
@@ -21,6 +23,7 @@ Mario::~Mario() {
 }
 
 void Mario::Update(float deltaTime) {
+
     sf::Vector2f velocity(0.0f, 0.0f);
 
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
@@ -32,16 +35,11 @@ void Mario::Update(float deltaTime) {
 
     // SKAKANIE, COŚ NIE DZIAŁA...
 
-    if(sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && canJump == true){
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && canJump){
         std::cout << "Naciskasz!";
-        velocity.y = -150;
-
-
+        body.move({0, -gravity});
         canJump = false;
-
     }
-
-
 
 
     // Gravity Logic
@@ -49,12 +47,9 @@ void Mario::Update(float deltaTime) {
         body.move({0, gravity});
         canJump = false;
     }
-
     if(body.getPosition().y == 700){
         canJump = true;
     }
-
-
     // Animation change
     if(velocity.x == 0.0f){
         row = 0;
@@ -70,14 +65,9 @@ void Mario::Update(float deltaTime) {
 
 
 
-
-
     animation.Update(row, deltaTime, faceRight);
     body.setTextureRect(animation.uvRect);
     body.move(velocity);
-
-
-
 
 
 
@@ -91,12 +81,8 @@ void Mario::Update(float deltaTime) {
         canJump = true;
         std::cout << "bottom_true";
     }
-
-
 }
 
 void Mario::Draw(sf::RenderWindow& window) {
     window.draw(body);
 }
-
-
