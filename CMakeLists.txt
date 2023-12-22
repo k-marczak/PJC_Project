@@ -4,12 +4,6 @@ project(PJC_Project)
 set(CMAKE_CXX_STANDARD 20)
 
 add_executable(PJC_Project main.cpp
-        Animation.h
-        Animation.cpp
-        Mario.h
-        Mario.cpp
-        Map.cpp
-        Map.h
 )
 
 
