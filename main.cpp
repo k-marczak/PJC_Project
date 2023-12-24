@@ -6,37 +6,32 @@
 
 using namespace std;
 
-namespace Assets
-{
-    class Font : public sf::Font
-    {
+namespace Assets {
+    class Font : public sf::Font {
     public:
-        Font(string path)
-        {
+        Font(string path) {
             loadFromFile(path);
         }
     };
-    class Texture : public sf::Texture
-    {
+
+    class Texture : public sf::Texture {
     public:
-        Texture(string path)
-        {
+        Texture(string path) {
             loadFromFile(path);
         }
     };
 };
-namespace Assets::Fonts
-{
+namespace Assets::Fonts {
     Font Arial("../arial.ttf");
 };
-namespace Assets::SpriteSheets
-{
+namespace Assets::SpriteSheets {
     //Texture abc("");
     Texture LeverLeft("../leverLeft.png");
     Texture LeverRight("../leverRight.png");
     Texture DoorOpen("../DoorOpen.png");
     Texture DoorClose("../DoorClose.png");
 };
+
 class Player {
 public:
     sf::RectangleShape body;
@@ -223,15 +218,14 @@ public:
     }
 };
 
-class HidedRoomDoor : public CollisionObjects{
+class HidedRoomDoor : public CollisionObjects {
 public:
     sf::RectangleShape body;
 
-    HidedRoomDoor(sf::Vector2f pos, sf::Vector2f size){
+    HidedRoomDoor(sf::Vector2f pos, sf::Vector2f size) {
         body.setSize(size);
         body.setPosition(pos);
-        body.setFillColor(sf::Color::Red);
-        isTransparent = true;
+        body.setFillColor(sf::Color::Yellow);
     }
 
     virtual sf::RectangleShape &getBody() {
@@ -248,6 +242,7 @@ public:
 
     virtual void collisionActionLeft() {
 
+
     }
 
     virtual void collisionActionRight() {
@@ -257,7 +252,6 @@ public:
     virtual void draw(sf::RenderWindow &window) {
         window.draw(body);
     }
-
 };
 
 class Floor : public CollisionObjects {
@@ -392,183 +386,198 @@ public:
     }
 };
 
-class Aktuator
-{
+class Aktuator {
 public:
     bool isOn = false;
     sf::Sprite body;
+
     Aktuator(bool val) : isOn(val) {}
+
     Aktuator() {}
+
     virtual ~Aktuator() {}
+
     virtual void draw(sf::RenderWindow &window) = 0;
+
     virtual void activate() = 0;
 };
 
-class Door : public Aktuator
-{
+class Door : public Aktuator {
 public:
 
-    Door(bool val, sf::Vector2f pos)
-    {
+    Door(bool val, sf::Vector2f pos) {
         isOn = val;
         body.setTexture(Assets::SpriteSheets::DoorClose);
         body.setPosition(pos);
         body.setScale(0.2f, 0.3f);
     }
-    Door() {body.setTexture(Assets::SpriteSheets::DoorClose);}
 
-    virtual void activate()
-    {
+    Door() { body.setTexture(Assets::SpriteSheets::DoorClose); }
+
+    virtual void activate() {
         if (isOn)
             body.setTexture(Assets::SpriteSheets::DoorOpen);
         else
             body.setTexture(Assets::SpriteSheets::DoorClose);
     }
 
-    void draw(sf::RenderWindow &window)
-    {
+    void draw(sf::RenderWindow &window) {
         window.draw(body);
     }
 };
 
-class Platform : public Aktuator
-{
+class Platform : public Aktuator {
 public:
-    Platform(bool val)
-    {
+    Platform(bool val) {
         isOn = val;
     }
+
     Platform() {}
 
-    virtual void activate()
-    {
+    virtual void activate() {
         cout << "magda" << endl;
     }
 
-    void draw(sf::RenderWindow &window)
-    {
+    void draw(sf::RenderWindow &window) {
 
     }
 };
 
-class Sensor
-{
+class Sensor {
 public:
     Aktuator *akt = NULL;
     sf::Sprite body;
+
+
     Sensor(Aktuator *ak) : akt(ak) {}
-    ~Sensor()
-    {
+
+    ~Sensor() {
         delete akt;
     }
 
-    void on()
-    {
+    void on() {
         akt->isOn = true;
     }
 
-    void off()
-    {
+    void off() {
         akt->isOn = false;
     }
 
-    bool status()
-    {
+    bool status() {
         return akt->isOn;
     }
 
     virtual void activate() = 0;
+
     virtual void draw(sf::RenderWindow &window) = 0;
 };
 
-class Lever : public Sensor
-{
+class Lever : public Sensor {
 public:
 
-    Lever(Aktuator *ak, sf::Vector2f pos) : Sensor(ak)
-    {
-        if (akt->isOn)
+    bool doorsOpen = false;
+
+    Lever(Aktuator *ak, sf::Vector2f pos) : Sensor(ak) {
+        if (akt->isOn) {
             body.setTexture(Assets::SpriteSheets::LeverLeft);
-        else
+        } else
             body.setTexture(Assets::SpriteSheets::LeverRight);
         body.setPosition(pos);
         body.setScale(0.3f, 0.2f);
     }
 
-    virtual void activate()
-    {
+    virtual void activate() {
         akt->isOn = !akt->isOn;
-        if (akt->isOn)
+        if (akt->isOn) {
             body.setTexture(Assets::SpriteSheets::LeverLeft);
-        else
+            doorsOpen = true;
+            cout << doorsOpen;
+        } else {
             body.setTexture(Assets::SpriteSheets::LeverRight);
+            doorsOpen = false;
+            cout << doorsOpen;
+        }
         akt->activate();
     }
 
-    void draw(sf::RenderWindow &window)
-    {
+    bool isDoorsOpen() {
+        return doorsOpen;
+    }
+
+    void draw(sf::RenderWindow &window) {
         window.draw(body);
     }
 };
 
-class InterButton : public Sensor
-{
+class InterButton : public Sensor {
 public:
     InterButton(Aktuator *ak) : Sensor(ak) {}
-    virtual void activate()
-    {
+
+    virtual void activate() {
         cout << "magda" << endl;
     }
-    void draw(sf::RenderWindow &window)
-    {
+
+    void draw(sf::RenderWindow &window) {
 
     }
 };
 
-class Level
-{
+class Level {
 public:
-    vector<CollisionObjects*> floors;
-    vector<Sensor*> sensory;
-    vector<Enemy*> enemies;
+    vector<CollisionObjects *> floors;
+    vector<Sensor *> sensory;
+    vector<Enemy *> enemies;
+    vector<CollisionObjects *> doors;
+
     Player pl;
 
 };
 
-class LevelManager
-{
+class LevelManager {
 public:
     vector<Level> levels;
 
-    LevelManager()
-    {
+
+    LevelManager() {
         //Level1
         levels.emplace_back(Level());
-        levels[0].pl.body.setPosition(10.0f, 130.0f);
 
-        // COIN 1
-        levels[0].floors.emplace_back(new Coin({300, 100}, {40, 40}));   // COIN 1
 
+        // PODŁOGA
         levels[0].floors.emplace_back(new Floor({0, 850}, {200, 50}));   // podłoga 1
         levels[0].floors.emplace_back(new Floor({200, 770}, {30, 130})); // przeszkoda 1
         levels[0].floors.emplace_back(new Floor({250, 540}, {20, 20}));  // przeszkoda 2 (kafelek)
         levels[0].floors.emplace_back(new Floor({20, 540}, {150, 20}));  // floor for lever
-
         levels[0].floors.emplace_back(new Floor({270, 700}, {30, 200})); // przeszkoda 3
         levels[0].floors.emplace_back(new Floor({340, 630}, {30, 270})); // przeszkoda 4
         levels[0].floors.emplace_back(new Floor({410, 500}, {30, 400})); // przeszkoda 5
-
-
         levels[0].floors.emplace_back(new Floor({550, 500}, {30, 100})); // przeszkoda 6
         levels[0].floors.emplace_back(new Floor({550, 700}, {30, 100})); // przeszkoda 7
         levels[0].floors.emplace_back(new Floor({550, 850}, {200, 50})); // podłoga 2
-
-
         levels[0].floors.emplace_back(new StickyFloor({950, 700}, {30, 100})); // Sticky Schody 1
         levels[0].floors.emplace_back(new StickyFloor({850, 550}, {30, 100})); // Sticky Schody 2
         levels[0].floors.emplace_back(new StickyFloor({950, 450}, {30, 100})); // Sticky Schody 3
-
         levels[0].floors.emplace_back(new Floor({0, 350}, {900, 50})); // podłoga 3 top
+        levels[0].floors.emplace_back(new Floor({0, 0}, {30, 400})); // ściana 1 top
+        levels[0].floors.emplace_back(new Floor({50, 250}, {20, 50})); // przeszkoda 8
+        levels[0].floors.emplace_back(new Floor({200, 150}, {1330, 50})); // podłoga 4 top
+        levels[0].floors.emplace_back(new Floor({1100, 200}, {30, 70})); // ściana 2 top (room)
+        levels[0].floors.emplace_back(new Floor({1500, 200}, {30, 600})); // ściana 3 top (room)
+        levels[0].floors.emplace_back(new Floor({1080, 350}, {450, 50})); // podłoga 5 top
+        levels[0].floors.emplace_back(new Floor({1600, 550}, {320, 50})); // podłoga 6 top
+        levels[0].floors.emplace_back(new Floor({1100, 750}, {350, 50})); // podłoga 7
+        levels[0].floors.emplace_back(new Floor({1600, 850}, {320, 50})); // podłoga 8
+
+
+        // GRACZ
+        levels[0].pl.body.setPosition(1250.0f, 600.0f);
+
+
+        // COINSY
+        levels[0].floors.emplace_back(new Coin({300, 100}, {40, 40}));   // COIN 1
+        levels[0].floors.emplace_back(new Coin({1350, 600}, {40, 40}));   // COIN 2
+        levels[0].floors.emplace_back(new Coin({1400, 600}, {40, 40}));   // COIN 3
+
 
         // Kolizja od dołu kafelki //
         levels[0].floors.emplace_back(new Tile({600, 230}, {40, 40}));  // przeszkoda 3 (kafelek)
@@ -576,31 +585,18 @@ public:
         levels[0].floors.emplace_back(new Tile({700, 230}, {40, 40}));  // przeszkoda 5 (kafelek)
 
 
-        levels[0].floors.emplace_back(new Floor({0, 0}, {30, 400})); // ściana 1 top
-
-        levels[0].floors.emplace_back(new Floor({50, 250}, {20, 50})); // przeszkoda 8
-        levels[0].floors.emplace_back(new Floor({200, 150}, {1330, 50})); // podłoga 4 top
+        // ENEMIES
+        levels[0].enemies.emplace_back(new Enemy({300, 290}, -150, 50));    // ENEMY
+        levels[0].enemies.emplace_back(new Enemy({800, 290}, -50, 50));     // ENEMY
 
 
         // WALL Door to Hided Room...
-        levels[0].floors.emplace_back(new HidedRoomDoor({1100, 200}, {30, 600})); // ściana 2 top (room)
-
-
-        levels[0].floors.emplace_back(new Floor({1500, 200}, {30, 600})); // ściana 3 top (room)
-
-        levels[0].floors.emplace_back(new Floor({1080, 350}, {450, 50})); // podłoga 5 top
-        levels[0].floors.emplace_back(new Floor({1600, 550}, {320, 50})); // podłoga 6 top
-        levels[0].floors.emplace_back(new Floor({1100, 750}, {350, 50})); // podłoga 7
-        levels[0].floors.emplace_back(new Floor({1600, 850}, {320, 50})); // podłoga 8
-
-        levels[0].enemies.emplace_back(new Enemy({300, 290}, -150, 50));
-        levels[0].enemies.emplace_back(new Enemy({800, 290}, -50, 50));
-
-
-        levels[0].sensory.emplace_back(new Lever(new Door(false, {1100,270}), {20,515}));
-
+        levels[0].doors.emplace_back(new HidedRoomDoor({1100, 270}, {30, 80})); // ściana 4 top (room)
+        levels[0].sensory.emplace_back(new Lever(new Door(false, {1100, 270}), {1300, 730}));
 
     }
+
+
 };
 
 class Gra {
@@ -619,27 +615,22 @@ public:
         text.setPosition(10, 10);
     }
 
-    void setLevel(int nr)
-    {
-        if (nr >= 0 && nr < levelManager.levels.size())
-        {
+    void setLevel(int nr) {
+        if (nr >= 0 && nr < levelManager.levels.size()) {
             deleteLevel();
             currentLevel = new Level(levelManager.levels[nr]);
             text.setString(to_string(currentLevel->pl.health));
-        }
-        else
+        } else
             cout << "Level does not exist" << endl;
     }
 
-    void deleteLevel()
-    {
+    void deleteLevel() {
         if (currentLevel != NULL)
             delete currentLevel;
     }
 
     void collisions() {
-        if (currentLevel != NULL)
-        {
+        if (currentLevel != NULL) {
             int offsetY = 5;
             int offsetX = -10;
             bool isCollision = false;
@@ -651,14 +642,13 @@ public:
             }
 
 
-
-
             // CHECK Collision Objects
             for (int i = 0; i <
-                            (int) currentLevel->floors.size(); i++) {//podzielic kolizje na 4 strony obiektu i dla kazdego zrobic set pos na konkretny element
+                            (int) currentLevel->floors.size(); i++) {        //podzielic kolizje na 4 strony obiektu i dla kazdego zrobic set pos na konkretny element
 
-                currentLevel->floors[i]->getBody().setFillColor(sf::Color(255,255,255,255));
-                if (currentLevel->pl.body.getGlobalBounds().intersects(currentLevel->floors[i]->getBody().getGlobalBounds())
+                currentLevel->floors[i]->getBody().setFillColor(sf::Color(255, 255, 255, 255));
+                if (currentLevel->pl.body.getGlobalBounds().intersects(
+                        currentLevel->floors[i]->getBody().getGlobalBounds())
                     //currentLevel->pl od góry (stoi)
                     &&
                     (currentLevel->pl.body.getPosition().y + currentLevel->pl.body.getGlobalBounds().height) <
@@ -670,71 +660,86 @@ public:
                     (currentLevel->pl.body.getPosition().x + currentLevel->pl.body.getGlobalBounds().width) >
                     currentLevel->floors[i]->getBody().getPosition().x + offsetX
                     && (currentLevel->pl.body.getPosition().x) <
-                       currentLevel->floors[i]->getBody().getPosition().x + currentLevel->floors[i]->getBody().getSize().x - offsetX
+                       currentLevel->floors[i]->getBody().getPosition().x +
+                       currentLevel->floors[i]->getBody().getSize().x - offsetX
                     && currentLevel->floors[i]->upCollision) {
                     isCollision = true;
                     currentLevel->pl.body.setPosition(currentLevel->pl.body.getPosition().x,
-                                                      currentLevel->floors[i]->getBody().getPosition().y - currentLevel->pl.body.getGlobalBounds().height);
+                                                      currentLevel->floors[i]->getBody().getPosition().y -
+                                                      currentLevel->pl.body.getGlobalBounds().height);
                     currentLevel->floors[i]->collisionActionUp();
                     //cout<<"gora"<<endl;
                     //przyklad przezroczystosci:
                     //currentLevel->floors[i]->getBody().setFillColor(sf::Color(0,0,0,122));
 
                     break;
-                } else if (currentLevel->pl.body.getGlobalBounds().intersects(currentLevel->floors[i]->getBody().getGlobalBounds())
+                } else if (currentLevel->pl.body.getGlobalBounds().intersects(
+                        currentLevel->floors[i]->getBody().getGlobalBounds())
                            //od dołu (zatrzymuje się na spodzie i spada)
                            && (currentLevel->pl.body.getPosition().y) <
-                              currentLevel->floors[i]->getBody().getPosition().y + currentLevel->floors[i]->getBody().getSize().y
+                              currentLevel->floors[i]->getBody().getPosition().y +
+                              currentLevel->floors[i]->getBody().getSize().y
                            && (currentLevel->pl.body.getPosition().y) >
-                              currentLevel->floors[i]->getBody().getPosition().y + currentLevel->floors[i]->getBody().getSize().y - offsetY
+                              currentLevel->floors[i]->getBody().getPosition().y +
+                              currentLevel->floors[i]->getBody().getSize().y - offsetY
                            && (currentLevel->pl.body.getPosition().x + currentLevel->pl.body.getGlobalBounds().width) >
                               currentLevel->floors[i]->getBody().getPosition().x + offsetX
                            && (currentLevel->pl.body.getPosition().x) <
-                              currentLevel->floors[i]->getBody().getPosition().x + currentLevel->floors[i]->getBody().getSize().x - offsetX
+                              currentLevel->floors[i]->getBody().getPosition().x +
+                              currentLevel->floors[i]->getBody().getSize().x - offsetX
                            && currentLevel->floors[i]->downCollision) {
                     //isCollision = true;
                     currentLevel->pl.body.setPosition(currentLevel->pl.body.getPosition().x,
-                                                      currentLevel->floors[i]->getBody().getPosition().y + currentLevel->floors[i]->getBody().getSize().y);
+                                                      currentLevel->floors[i]->getBody().getPosition().y +
+                                                      currentLevel->floors[i]->getBody().getSize().y);
                     currentLevel->pl.speedY = 0.2;
                     currentLevel->floors[i]->collisionActionDown();
                     //cout<<"dol"<<endl;
                     break;
-                } else if (currentLevel->pl.body.getGlobalBounds().intersects(currentLevel->floors[i]->getBody().getGlobalBounds())
+                } else if (currentLevel->pl.body.getGlobalBounds().intersects(
+                        currentLevel->floors[i]->getBody().getGlobalBounds())
                            //od prawej (zatrzymuje się na ścianie i spada
                            && (currentLevel->pl.body.getPosition().y + currentLevel->pl.body.getGlobalBounds().height) >
                               currentLevel->floors[i]->getBody().getPosition().y
                            && (currentLevel->pl.body.getPosition().y) <
-                              currentLevel->floors[i]->getBody().getPosition().y + currentLevel->floors[i]->getBody().getSize().y
+                              currentLevel->floors[i]->getBody().getPosition().y +
+                              currentLevel->floors[i]->getBody().getSize().y
                            &&
                            (currentLevel->pl.body.getPosition().x) <
-                           currentLevel->floors[i]->getBody().getPosition().x + currentLevel->floors[i]->getBody().getSize().x - offsetX
+                           currentLevel->floors[i]->getBody().getPosition().x +
+                           currentLevel->floors[i]->getBody().getSize().x - offsetX
                            &&
                            (currentLevel->pl.body.getPosition().x) >
-                           currentLevel->floors[i]->getBody().getPosition().x + currentLevel->floors[i]->getBody().getSize().x + offsetX
+                           currentLevel->floors[i]->getBody().getPosition().x +
+                           currentLevel->floors[i]->getBody().getSize().x + offsetX
                            && currentLevel->floors[i]->rightCollision) {
-                    currentLevel->pl.body.setPosition(currentLevel->floors[i]->getBody().getPosition().x + currentLevel->floors[i]->getBody().getSize().x + 1,
+                    currentLevel->pl.body.setPosition(currentLevel->floors[i]->getBody().getPosition().x +
+                                                      currentLevel->floors[i]->getBody().getSize().x + 1,
                                                       currentLevel->pl.body.getPosition().y);
                     //cout<<"prawy"<<endl;
                     if (currentLevel->floors[i]->isSticky) isCollision = true;
-                    if(currentLevel -> floors[i] -> isTransparent) isCollision = false;
+                    if (currentLevel->floors[i]->isTransparent) isCollision = false;
                     currentLevel->floors[i]->collisionActionRight();
                     break;
-                } else if (currentLevel->pl.body.getGlobalBounds().intersects(currentLevel->floors[i]->getBody().getGlobalBounds())
+                } else if (currentLevel->pl.body.getGlobalBounds().intersects(
+                        currentLevel->floors[i]->getBody().getGlobalBounds())
                            //od lewej (zatrzymuje się na ścianie i spada
                            && (currentLevel->pl.body.getPosition().y + currentLevel->pl.body.getGlobalBounds().height) >
                               currentLevel->floors[i]->getBody().getPosition().y
                            && (currentLevel->pl.body.getPosition().y) <
-                              currentLevel->floors[i]->getBody().getPosition().y + currentLevel->floors[i]->getBody().getSize().y
+                              currentLevel->floors[i]->getBody().getPosition().y +
+                              currentLevel->floors[i]->getBody().getSize().y
                            && (currentLevel->pl.body.getPosition().x + currentLevel->pl.body.getGlobalBounds().width) <
                               currentLevel->floors[i]->getBody().getPosition().x - offsetX
                            && (currentLevel->pl.body.getPosition().x + currentLevel->pl.body.getGlobalBounds().width) >
                               currentLevel->floors[i]->getBody().getPosition().x + offsetX
                            && currentLevel->floors[i]->leftCollision) {
-                    currentLevel->pl.body.setPosition(currentLevel->floors[i]->getBody().getPosition().x - currentLevel->pl.body.getGlobalBounds().width - 1,
+                    currentLevel->pl.body.setPosition(currentLevel->floors[i]->getBody().getPosition().x -
+                                                      currentLevel->pl.body.getGlobalBounds().width - 1,
                                                       currentLevel->pl.body.getPosition().y);
                     //cout<<"lewy"<<endl;
                     if (currentLevel->floors[i]->isSticky) isCollision = true;
-                    if(currentLevel -> floors[i] -> isTransparent) isCollision = false;
+                    if (currentLevel->floors[i]->isTransparent) isCollision = false;
                     currentLevel->floors[i]->collisionActionLeft();
                     break;
                 }
@@ -743,7 +748,8 @@ public:
 
             // CHECK ENEMY COLLISION
             for (int i = 0; i < (int) currentLevel->enemies.size(); i++) {
-                if (currentLevel->pl.body.getGlobalBounds().intersects(currentLevel->enemies[i]->getBody().getGlobalBounds())
+                if (currentLevel->pl.body.getGlobalBounds().intersects(
+                        currentLevel->enemies[i]->getBody().getGlobalBounds())
                     //currentLevel->pl od góry (stoi)
                     &&
                     (currentLevel->pl.body.getPosition().y + currentLevel->pl.body.getGlobalBounds().height) <
@@ -755,29 +761,36 @@ public:
                     (currentLevel->pl.body.getPosition().x + currentLevel->pl.body.getGlobalBounds().width) >
                     currentLevel->enemies[i]->getBody().getPosition().x + offsetX
                     && (currentLevel->pl.body.getPosition().x) <
-                       currentLevel->enemies[i]->getBody().getPosition().x + currentLevel->enemies[i]->getBody().getSize().x - offsetX
+                       currentLevel->enemies[i]->getBody().getPosition().x +
+                       currentLevel->enemies[i]->getBody().getSize().x - offsetX
                         ) {
                     currentLevel->pl.body.setPosition(currentLevel->pl.body.getPosition().x,
-                                                      currentLevel->enemies[i]->getBody().getPosition().y - currentLevel->pl.body.getGlobalBounds().height);
+                                                      currentLevel->enemies[i]->getBody().getPosition().y -
+                                                      currentLevel->pl.body.getGlobalBounds().height);
                     cout << "gora" << endl;
                     currentLevel->pl.speedY = -1;
                     currentLevel->enemies.erase(currentLevel->enemies.begin() + i);
                     i--;
                     break;
-                } else if (currentLevel->pl.body.getGlobalBounds().intersects(currentLevel->enemies[i]->getBody().getGlobalBounds())
+                } else if (currentLevel->pl.body.getGlobalBounds().intersects(
+                        currentLevel->enemies[i]->getBody().getGlobalBounds())
                            //od prawej (zatrzymuje się na ścianie i spada
                            && (currentLevel->pl.body.getPosition().y + currentLevel->pl.body.getGlobalBounds().height) >
                               currentLevel->enemies[i]->getBody().getPosition().y
                            && (currentLevel->pl.body.getPosition().y) <
-                              currentLevel->enemies[i]->getBody().getPosition().y + currentLevel->enemies[i]->getBody().getSize().y
+                              currentLevel->enemies[i]->getBody().getPosition().y +
+                              currentLevel->enemies[i]->getBody().getSize().y
                            &&
                            (currentLevel->pl.body.getPosition().x) <
-                           currentLevel->enemies[i]->getBody().getPosition().x + currentLevel->enemies[i]->getBody().getSize().x - offsetX
+                           currentLevel->enemies[i]->getBody().getPosition().x +
+                           currentLevel->enemies[i]->getBody().getSize().x - offsetX
                            &&
                            (currentLevel->pl.body.getPosition().x) >
-                           currentLevel->enemies[i]->getBody().getPosition().x + currentLevel->enemies[i]->getBody().getSize().x + offsetX
+                           currentLevel->enemies[i]->getBody().getPosition().x +
+                           currentLevel->enemies[i]->getBody().getSize().x + offsetX
                         ) {
-                    currentLevel->pl.body.setPosition(currentLevel->enemies[i]->getBody().getPosition().x + currentLevel->pl.body.getGlobalBounds().width + 35,
+                    currentLevel->pl.body.setPosition(currentLevel->enemies[i]->getBody().getPosition().x +
+                                                      currentLevel->pl.body.getGlobalBounds().width + 35,
                                                       currentLevel->pl.body.getPosition().y);
                     std::cout << "Kontakt prawo" << endl;
 
@@ -787,18 +800,21 @@ public:
 
                     std::cout << currentLevel->pl.health << endl;
                     break;
-                } else if (currentLevel->pl.body.getGlobalBounds().intersects(currentLevel->enemies[i]->getBody().getGlobalBounds())
+                } else if (currentLevel->pl.body.getGlobalBounds().intersects(
+                        currentLevel->enemies[i]->getBody().getGlobalBounds())
                            //od lewej (zatrzymuje się na ścianie i spada
                            && (currentLevel->pl.body.getPosition().y + currentLevel->pl.body.getGlobalBounds().height) >
                               currentLevel->enemies[i]->getBody().getPosition().y
                            && (currentLevel->pl.body.getPosition().y) <
-                              currentLevel->enemies[i]->getBody().getPosition().y + currentLevel->enemies[i]->getBody().getSize().y
+                              currentLevel->enemies[i]->getBody().getPosition().y +
+                              currentLevel->enemies[i]->getBody().getSize().y
                            && (currentLevel->pl.body.getPosition().x + currentLevel->pl.body.getGlobalBounds().width) <
                               currentLevel->enemies[i]->getBody().getPosition().x - offsetX
                            && (currentLevel->pl.body.getPosition().x + currentLevel->pl.body.getGlobalBounds().width) >
                               currentLevel->enemies[i]->getBody().getPosition().x + offsetX
                         ) {
-                    currentLevel->pl.body.setPosition(currentLevel->enemies[i]->getBody().getPosition().x - currentLevel->pl.body.getGlobalBounds().width - 35,
+                    currentLevel->pl.body.setPosition(currentLevel->enemies[i]->getBody().getPosition().x -
+                                                      currentLevel->pl.body.getGlobalBounds().width - 35,
                                                       currentLevel->pl.body.getPosition().y);
                     cout << "Kontakt lewo" << endl;
 
@@ -809,6 +825,82 @@ public:
                 }
             }
 
+
+
+            // CHECK DOORS Collision
+            for (int i = 0; i < (int) currentLevel->doors.size(); i++) {
+                if (currentLevel->pl.body.getGlobalBounds().intersects(
+                        currentLevel->doors[i]->getBody().getGlobalBounds())
+                    //currentLevel->pl od góry (stoi)
+                    &&
+                    (currentLevel->pl.body.getPosition().y + currentLevel->pl.body.getGlobalBounds().height) <
+                    currentLevel->doors[i]->getBody().getPosition().y + offsetY
+                    &&
+                    (currentLevel->pl.body.getPosition().y + currentLevel->pl.body.getGlobalBounds().height) >
+                    currentLevel->doors[i]->getBody().getPosition().y - offsetY
+                    &&
+                    (currentLevel->pl.body.getPosition().x + currentLevel->pl.body.getGlobalBounds().width) >
+                    currentLevel->doors[i]->getBody().getPosition().x + offsetX
+                    && (currentLevel->pl.body.getPosition().x) <
+                       currentLevel->doors[i]->getBody().getPosition().x +
+                       currentLevel->doors[i]->getBody().getSize().x - offsetX
+                        ) {
+                    currentLevel->pl.body.setPosition(currentLevel->pl.body.getPosition().x,
+                                                      currentLevel->doors[i]->getBody().getPosition().y -
+                                                      currentLevel->pl.body.getGlobalBounds().height);
+                    cout << "gora" << endl;
+
+
+                    break;
+                } else if (currentLevel->pl.body.getGlobalBounds().intersects(
+                        currentLevel->doors[i]->getBody().getGlobalBounds())
+                           //od prawej (zatrzymuje się na ścianie i spada
+                           && (currentLevel->pl.body.getPosition().y + currentLevel->pl.body.getGlobalBounds().height) >
+                              currentLevel->doors[i]->getBody().getPosition().y
+                           && (currentLevel->pl.body.getPosition().y) <
+                              currentLevel->doors[i]->getBody().getPosition().y +
+                              currentLevel->doors[i]->getBody().getSize().y
+                           &&
+                           (currentLevel->pl.body.getPosition().x) <
+                           currentLevel->doors[i]->getBody().getPosition().x +
+                           currentLevel->doors[i]->getBody().getSize().x - offsetX
+                           &&
+                           (currentLevel->pl.body.getPosition().x) >
+                           currentLevel->doors[i]->getBody().getPosition().x +
+                           currentLevel->doors[i]->getBody().getSize().x + offsetX
+                        ) {
+                    currentLevel->pl.body.setPosition(currentLevel->doors[i]->getBody().getPosition().x +
+                                                      currentLevel->pl.body.getGlobalBounds().width + offsetX,
+                                                      currentLevel->pl.body.getPosition().y);
+                    std::cout << "Kontakt prawo" << endl;
+
+
+
+
+
+                    std::cout << currentLevel->pl.health << endl;
+                    break;
+                } else if (currentLevel->pl.body.getGlobalBounds().intersects(
+                        currentLevel->doors[i]->getBody().getGlobalBounds())
+                           //od lewej (zatrzymuje się na ścianie i spada
+                           && (currentLevel->pl.body.getPosition().y + currentLevel->pl.body.getGlobalBounds().height) >
+                              currentLevel->doors[i]->getBody().getPosition().y
+                           && (currentLevel->pl.body.getPosition().y) <
+                              currentLevel->doors[i]->getBody().getPosition().y +
+                              currentLevel->doors[i]->getBody().getSize().y
+                           && (currentLevel->pl.body.getPosition().x + currentLevel->pl.body.getGlobalBounds().width) <
+                              currentLevel->doors[i]->getBody().getPosition().x - offsetX
+                           && (currentLevel->pl.body.getPosition().x + currentLevel->pl.body.getGlobalBounds().width) >
+                              currentLevel->doors[i]->getBody().getPosition().x + offsetX
+                        ) {
+                    currentLevel->pl.body.setPosition(currentLevel->doors[i]->getBody().getPosition().x -
+                                                      currentLevel->pl.body.getGlobalBounds().width,
+                                                      currentLevel->pl.body.getPosition().y);
+                    cout << "Kontakt lewo" << endl;
+
+                    break;
+                }
+            }
 
             if (isCollision && currentLevel->pl.delay) {
                 currentLevel->pl.speedY = 0;
@@ -821,17 +913,18 @@ public:
     }
 
     void enemyMove() {
-        if (currentLevel != NULL)
-        {
+        if (currentLevel != NULL) {
             for (int i = 0; i < currentLevel->enemies.size(); i++) {
                 if (!(currentLevel->enemies[i]->posMax == currentLevel->enemies[i]->posMin)) {
                     if (currentLevel->enemies[i]->kierunek) {
-                        if (currentLevel->enemies[i]->body.getPosition().x + 1 >= currentLevel->enemies[i]->startingPos.x + currentLevel->enemies[i]->posMax) {
+                        if (currentLevel->enemies[i]->body.getPosition().x + 1 >=
+                            currentLevel->enemies[i]->startingPos.x + currentLevel->enemies[i]->posMax) {
                             currentLevel->enemies[i]->kierunek = false;
                         } else
                             currentLevel->enemies[i]->body.move(0.1, 0);
                     } else {
-                        if (currentLevel->enemies[i]->body.getPosition().x - 1 <= currentLevel->enemies[i]->startingPos.x + currentLevel->enemies[i]->posMin) {
+                        if (currentLevel->enemies[i]->body.getPosition().x - 1 <=
+                            currentLevel->enemies[i]->startingPos.x + currentLevel->enemies[i]->posMin) {
                             currentLevel->enemies[i]->kierunek = true;
                         } else
                             currentLevel->enemies[i]->body.move(-0.1, 0);
@@ -842,24 +935,24 @@ public:
     }
 
     void gravity() {
-        if (currentLevel != NULL)
-        {
+        if (currentLevel != NULL) {
             collisions();
             currentLevel->pl.body.move(0, currentLevel->pl.speedY);
         }
     }
 
     void draw(sf::RenderWindow &window) {
-        if (currentLevel != NULL)
-        {
+        if (currentLevel != NULL) {
             for (int i = 0; i < (int) currentLevel->floors.size(); i++) {
                 currentLevel->floors[i]->draw(window);
+            }
+            for (int i = 0; i < (int) currentLevel->doors.size(); i++) {
+                currentLevel->doors[i]->draw(window);
             }
             for (int i = 0; i < (int) currentLevel->enemies.size(); i++) {
                 currentLevel->enemies[i]->draw(window);
             }
-            for(int i = 0; i < (int)currentLevel->sensory.size(); i++)
-            {
+            for (int i = 0; i < (int) currentLevel->sensory.size(); i++) {
                 currentLevel->sensory[i]->draw(window);
                 currentLevel->sensory[i]->akt->draw(window);
             }
@@ -969,7 +1062,7 @@ public:
     }
 };
 
-class OptionScreen : public Screen{
+class OptionScreen : public Screen {
 public:
     Button button1;
 
@@ -1014,54 +1107,46 @@ int main() {
                     start.active = false;
                     main.active = true;
                 }
-            }
-            else if (main.active)
-            {
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
-                {
+            } else if (main.active) {
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
                     main.active = false;
                     start.active = true;
                 }
-                for(int i = 0; i < main.gra.currentLevel->sensory.size(); i++)
-                {
-                    if (main.gra.currentLevel->sensory[i]->body.getGlobalBounds().intersects(main.gra.currentLevel->pl.body.getGlobalBounds()) && event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Key::R)
-                    {
+                for (int i = 0; i < main.gra.currentLevel->sensory.size(); i++) {
+                    if (main.gra.currentLevel->sensory[i]->body.getGlobalBounds().intersects(
+                            main.gra.currentLevel->pl.body.getGlobalBounds()) && event.type == sf::Event::KeyPressed &&
+                        event.key.code == sf::Keyboard::Key::R) {
                         main.gra.currentLevel->sensory[i]->activate();
+                        main.gra.currentLevel->doors[i]->getBody().move(0.0f, -550.0f);
                     }
                 }
-            }
-            else if (end.active) {
-                if (event.type == sf::Event::MouseButtonPressed)
-                {
+            } else if (end.active) {
+                if (event.type == sf::Event::MouseButtonPressed) {
                     end.active = false;
                     start.active = true;
                 }
-            }
-            else if (options.active) {
-                if (event.type == sf::Event::MouseButtonPressed)
-                {
+            } else if (options.active) {
+                if (event.type == sf::Event::MouseButtonPressed) {
                     options.active = false;
                     start.active = true;
                 }
             }
         }
-        if (main.gra.currentLevel != NULL)
-        {
+        if (main.gra.currentLevel != NULL) {
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
                 main.gra.currentLevel->pl.body.move(-1, 0);
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
                 main.gra.currentLevel->pl.body.move(1, 0);
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
                 main.gra.currentLevel->pl.timer.restart();
-                if (main.gra.currentLevel->pl.speedY == 0 || main.gra.currentLevel->pl.speedY == 0.01f) main.gra.currentLevel->pl.speedY = -1.4;
+                if (main.gra.currentLevel->pl.speedY == 0 || main.gra.currentLevel->pl.speedY == 0.01f)
+                    main.gra.currentLevel->pl.speedY = -1.4;
                 main.gra.currentLevel->pl.delay = false;
             }
 
             main.gra.gravity();
             main.gra.enemyMove();
         }
-
-
 
 
         window.clear(sf::Color::Black);
@@ -1084,35 +1169,16 @@ int main() {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-int main3()
-{
-    vector<Sensor*> sensory;
+int main3() {
+    vector<Sensor *> sensory;
 //    sensory.emplace_back(new Lever(new Door(false)));
 //    sensory.emplace_back(new InterButton(new Door(false)));
 
-    for(int i = 0; i < (int)sensory.size(); i++)
-    {
+    for (int i = 0; i < (int) sensory.size(); i++) {
         sensory[i]->activate();
 //        sensory[i]->draw(window);
 //        sensory[i]->akt->draw(window);
     }
-
 
 
     return 0;
