@@ -23,19 +23,13 @@ namespace Assets {
 };
 namespace Assets::Fonts {
     Font Arial("../arial.ttf");
-//    Font Arial("arial.ttf");
 };
 namespace Assets::SpriteSheets {
-//Texture abc("");
+    //Texture abc("");
     Texture LeverLeft("../leverLeft.png");
     Texture LeverRight("../leverRight.png");
     Texture DoorOpen("../DoorOpen.png");
     Texture DoorClose("../DoorClose.png");
-
-//    Texture LeverLeft("leverLeft.png");
-//    Texture LeverRight("leverRight.png");
-//    Texture DoorOpen("DoorOpen.png");
-//    Texture DoorClose("DoorClose.png");
 };
 
 class Player {
@@ -197,7 +191,6 @@ public:
         body.setSize(size);
         body.setPosition(pos);
         body.setFillColor(sf::Color::Green);
-        body.setFillColor(sf::Color::Green);
         isSticky = true;
     }
 
@@ -214,6 +207,42 @@ public:
     }
 
     virtual void collisionActionLeft() {
+
+    }
+
+    virtual void collisionActionRight() {
+
+    }
+
+    virtual void draw(sf::RenderWindow &window) {
+        window.draw(body);
+    }
+};
+
+class HidedRoomDoor : public CollisionObjects {
+public:
+    sf::RectangleShape body;
+
+    HidedRoomDoor(sf::Vector2f pos, sf::Vector2f size) {
+        body.setSize(size);
+        body.setPosition(pos);
+        body.setFillColor(sf::Color::Yellow);
+    }
+
+    virtual sf::RectangleShape &getBody() {
+        return body;
+    }
+
+    virtual void collisionActionUp() {
+
+    }
+
+    virtual void collisionActionDown() {
+
+    }
+
+    virtual void collisionActionLeft() {
+
 
     }
 
@@ -371,8 +400,6 @@ public:
     virtual void draw(sf::RenderWindow &window) = 0;
 
     virtual void activate() = 0;
-
-    virtual void collision(Player &pl) = 0;
 };
 
 class Door : public Aktuator {
@@ -394,22 +421,6 @@ public:
             body.setTexture(Assets::SpriteSheets::DoorClose);
     }
 
-    virtual void collision(Player &pl) {
-        if (!isOn) {
-            if (body.getGlobalBounds().intersects(pl.body.getGlobalBounds())) {
-                if (pl.body.getPosition().x < body.getPosition().x) {
-                    //collision left
-                    pl.body.setPosition(body.getPosition().x - pl.body.getGlobalBounds().width,
-                                        pl.body.getPosition().y);
-                } else if (pl.body.getPosition().x > body.getPosition().x) {
-                    //collision right
-                    pl.body.setPosition(body.getPosition().x + body.getGlobalBounds().width, pl.body.getPosition().y);
-                }
-            }
-        }
-
-    }
-
     void draw(sf::RenderWindow &window) {
         window.draw(body);
     }
@@ -427,16 +438,8 @@ public:
         cout << "magda" << endl;
     }
 
-    virtual void collision(Player &pl) {
-        if (isOn) {
-
-        }
-    }
-
     void draw(sf::RenderWindow &window) {
-        if (isOn) {
-            window.draw(body);
-        }
+
     }
 };
 
@@ -589,7 +592,7 @@ public:
 
 
         // WALL Door to Hided Room...
-        //levels[0].doors.emplace_back(new HidRoomDoor({1100, 270}, {30, 80})); // ściana 4 top (room)
+        levels[0].doors.emplace_back(new HidedRoomDoor({1100, 270}, {30, 80})); // ściana 4 top (room)
         levels[0].sensory.emplace_back(new Lever(new Door(false, {1100, 270}), {1300, 730}));
 
     }
@@ -825,80 +828,80 @@ public:
 
 
 
-//            // CHECK DOORS Collision
-//            for (int i = 0; i < (int) currentLevel->doors.size(); i++) {
-//                if (currentLevel->pl.body.getGlobalBounds().intersects(
-//                        currentLevel->doors[i]->getBody().getGlobalBounds())
-//                    //currentLevel->pl od góry (stoi)
-//                    &&
-//                    (currentLevel->pl.body.getPosition().y + currentLevel->pl.body.getGlobalBounds().height) <
-//                        currentLevel->doors[i]->getBody().getPosition().y + offsetY
-//                    &&
-//                    (currentLevel->pl.body.getPosition().y + currentLevel->pl.body.getGlobalBounds().height) >
-//                        currentLevel->doors[i]->getBody().getPosition().y - offsetY
-//                    &&
-//                    (currentLevel->pl.body.getPosition().x + currentLevel->pl.body.getGlobalBounds().width) >
-//                        currentLevel->doors[i]->getBody().getPosition().x + offsetX
-//                    && (currentLevel->pl.body.getPosition().x) <
-//                           currentLevel->doors[i]->getBody().getPosition().x +
-//                               currentLevel->doors[i]->getBody().getSize().x - offsetX
-//                    ) {
-//                    currentLevel->pl.body.setPosition(currentLevel->pl.body.getPosition().x,
-//                                                      currentLevel->doors[i]->getBody().getPosition().y -
-//                                                          currentLevel->pl.body.getGlobalBounds().height);
-//                    cout << "gora" << endl;
+            // CHECK DOORS Collision
+            for (int i = 0; i < (int) currentLevel->doors.size(); i++) {
+                if (currentLevel->pl.body.getGlobalBounds().intersects(
+                        currentLevel->doors[i]->getBody().getGlobalBounds())
+                    //currentLevel->pl od góry (stoi)
+                    &&
+                    (currentLevel->pl.body.getPosition().y + currentLevel->pl.body.getGlobalBounds().height) <
+                    currentLevel->doors[i]->getBody().getPosition().y + offsetY
+                    &&
+                    (currentLevel->pl.body.getPosition().y + currentLevel->pl.body.getGlobalBounds().height) >
+                    currentLevel->doors[i]->getBody().getPosition().y - offsetY
+                    &&
+                    (currentLevel->pl.body.getPosition().x + currentLevel->pl.body.getGlobalBounds().width) >
+                    currentLevel->doors[i]->getBody().getPosition().x + offsetX
+                    && (currentLevel->pl.body.getPosition().x) <
+                       currentLevel->doors[i]->getBody().getPosition().x +
+                       currentLevel->doors[i]->getBody().getSize().x - offsetX
+                        ) {
+                    currentLevel->pl.body.setPosition(currentLevel->pl.body.getPosition().x,
+                                                      currentLevel->doors[i]->getBody().getPosition().y -
+                                                      currentLevel->pl.body.getGlobalBounds().height);
+                    cout << "gora" << endl;
 
 
-//                    break;
-//                } else if (currentLevel->pl.body.getGlobalBounds().intersects(
-//                               currentLevel->doors[i]->getBody().getGlobalBounds())
-//                           //od prawej (zatrzymuje się na ścianie i spada
-//                           && (currentLevel->pl.body.getPosition().y + currentLevel->pl.body.getGlobalBounds().height) >
-//                                  currentLevel->doors[i]->getBody().getPosition().y
-//                           && (currentLevel->pl.body.getPosition().y) <
-//                                  currentLevel->doors[i]->getBody().getPosition().y +
-//                                      currentLevel->doors[i]->getBody().getSize().y
-//                           &&
-//                           (currentLevel->pl.body.getPosition().x) <
-//                               currentLevel->doors[i]->getBody().getPosition().x +
-//                                   currentLevel->doors[i]->getBody().getSize().x - offsetX
-//                           &&
-//                           (currentLevel->pl.body.getPosition().x) >
-//                               currentLevel->doors[i]->getBody().getPosition().x +
-//                                   currentLevel->doors[i]->getBody().getSize().x + offsetX
-//                           ) {
-//                    currentLevel->pl.body.setPosition(currentLevel->doors[i]->getBody().getPosition().x +
-//                                                          currentLevel->pl.body.getGlobalBounds().width + offsetX,
-//                                                      currentLevel->pl.body.getPosition().y);
-//                    std::cout << "Kontakt prawo" << endl;
+                    break;
+                } else if (currentLevel->pl.body.getGlobalBounds().intersects(
+                        currentLevel->doors[i]->getBody().getGlobalBounds())
+                           //od prawej (zatrzymuje się na ścianie i spada
+                           && (currentLevel->pl.body.getPosition().y + currentLevel->pl.body.getGlobalBounds().height) >
+                              currentLevel->doors[i]->getBody().getPosition().y
+                           && (currentLevel->pl.body.getPosition().y) <
+                              currentLevel->doors[i]->getBody().getPosition().y +
+                              currentLevel->doors[i]->getBody().getSize().y
+                           &&
+                           (currentLevel->pl.body.getPosition().x) <
+                           currentLevel->doors[i]->getBody().getPosition().x +
+                           currentLevel->doors[i]->getBody().getSize().x - offsetX
+                           &&
+                           (currentLevel->pl.body.getPosition().x) >
+                           currentLevel->doors[i]->getBody().getPosition().x +
+                           currentLevel->doors[i]->getBody().getSize().x + offsetX
+                        ) {
+                    currentLevel->pl.body.setPosition(currentLevel->doors[i]->getBody().getPosition().x +
+                                                      currentLevel->pl.body.getGlobalBounds().width + offsetX,
+                                                      currentLevel->pl.body.getPosition().y);
+                    std::cout << "Kontakt prawo" << endl;
 
 
 
 
 
-//                    std::cout << currentLevel->pl.health << endl;
-//                    break;
-//                } else if (currentLevel->pl.body.getGlobalBounds().intersects(
-//                               currentLevel->doors[i]->getBody().getGlobalBounds())
-//                           //od lewej (zatrzymuje się na ścianie i spada
-//                           && (currentLevel->pl.body.getPosition().y + currentLevel->pl.body.getGlobalBounds().height) >
-//                                  currentLevel->doors[i]->getBody().getPosition().y
-//                           && (currentLevel->pl.body.getPosition().y) <
-//                                  currentLevel->doors[i]->getBody().getPosition().y +
-//                                      currentLevel->doors[i]->getBody().getSize().y
-//                           && (currentLevel->pl.body.getPosition().x + currentLevel->pl.body.getGlobalBounds().width) <
-//                                  currentLevel->doors[i]->getBody().getPosition().x - offsetX
-//                           && (currentLevel->pl.body.getPosition().x + currentLevel->pl.body.getGlobalBounds().width) >
-//                                  currentLevel->doors[i]->getBody().getPosition().x + offsetX
-//                           ) {
-//                    currentLevel->pl.body.setPosition(currentLevel->doors[i]->getBody().getPosition().x -
-//                                                          currentLevel->pl.body.getGlobalBounds().width,
-//                                                      currentLevel->pl.body.getPosition().y);
-//                    cout << "Kontakt lewo" << endl;
+                    std::cout << currentLevel->pl.health << endl;
+                    break;
+                } else if (currentLevel->pl.body.getGlobalBounds().intersects(
+                        currentLevel->doors[i]->getBody().getGlobalBounds())
+                           //od lewej (zatrzymuje się na ścianie i spada
+                           && (currentLevel->pl.body.getPosition().y + currentLevel->pl.body.getGlobalBounds().height) >
+                              currentLevel->doors[i]->getBody().getPosition().y
+                           && (currentLevel->pl.body.getPosition().y) <
+                              currentLevel->doors[i]->getBody().getPosition().y +
+                              currentLevel->doors[i]->getBody().getSize().y
+                           && (currentLevel->pl.body.getPosition().x + currentLevel->pl.body.getGlobalBounds().width) <
+                              currentLevel->doors[i]->getBody().getPosition().x - offsetX
+                           && (currentLevel->pl.body.getPosition().x + currentLevel->pl.body.getGlobalBounds().width) >
+                              currentLevel->doors[i]->getBody().getPosition().x + offsetX
+                        ) {
+                    currentLevel->pl.body.setPosition(currentLevel->doors[i]->getBody().getPosition().x -
+                                                      currentLevel->pl.body.getGlobalBounds().width,
+                                                      currentLevel->pl.body.getPosition().y);
+                    cout << "Kontakt lewo" << endl;
 
-//                    break;
-//                }
-//            }
+                    break;
+                }
+            }
 
 
 
@@ -1002,6 +1005,7 @@ public:
                     break;
                 }
             }
+
 
 
             if (isCollision && currentLevel->pl.delay) {
@@ -1187,7 +1191,6 @@ int main() {
     MainScreen main;
     EndScreen end;
     OptionScreen options;
-    sf::View view({1920 / 2.0, 1080 / 2.0}, {1920, 1080});
 
     while (window.isOpen()) {
         sf::Event event;
@@ -1214,7 +1217,6 @@ int main() {
                     main.active = true;
                 }
             } else if (main.active) {
-
                 if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
                     main.active = false;
                     start.active = true;
@@ -1253,21 +1255,9 @@ int main() {
 
             main.gra.gravity();
             main.gra.enemyMove();
-
-
-            if (main.gra.currentLevel->pl.body.getPosition().x < view.getViewport().left + 300) {
-                view.move(-1, 0);
-            } else if (main.gra.currentLevel->pl.body.getPosition().x >
-                       view.getViewport().left + view.getViewport().width - 1000) {
-                view.move(1, 0);
-            }
-
-            for (int i = 0; i < main.gra.currentLevel->sensory.size(); i++) {
-                main.gra.currentLevel->sensory[i]->akt->collision(main.gra.currentLevel->pl);
-            }
         }
 
-        if (main.active) window.setView(view);
+
         window.clear(sf::Color::Black);
         if (start.active) start.drawScreen(window);
         else if (main.active) main.drawScreen(window);
@@ -1280,15 +1270,31 @@ int main() {
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 int main3() {
     vector<Sensor *> sensory;
-    //    sensory.emplace_back(new Lever(new Door(false)));
-    //    sensory.emplace_back(new InterButton(new Door(false)));
+//    sensory.emplace_back(new Lever(new Door(false)));
+//    sensory.emplace_back(new InterButton(new Door(false)));
 
     for (int i = 0; i < (int) sensory.size(); i++) {
         sensory[i]->activate();
-        //        sensory[i]->draw(window);
-        //        sensory[i]->akt->draw(window);
+//        sensory[i]->draw(window);
+//        sensory[i]->akt->draw(window);
     }
 
 
